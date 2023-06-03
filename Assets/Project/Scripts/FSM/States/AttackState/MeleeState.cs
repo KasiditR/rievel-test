@@ -33,7 +33,6 @@ public class MeleeState : State
             if (Vector3.Distance(agent.transform.position, player.position) < AttackRange)
             {
                 agent.isStopped = true;
-                animator.SetTrigger("AttackMelee"); // Trigger the melee attack animation
                 MeleeAttack();
             }
         }

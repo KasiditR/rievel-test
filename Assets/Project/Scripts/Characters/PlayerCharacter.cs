@@ -4,11 +4,7 @@ using UnityEngine;
 
 public class PlayerCharacter : BaseCharacter
 {
-    [SerializeField] private float hp = 100;
-    private void Awake() 
-    {
-        this.health = hp;
-    }
+    
     private void OnEnable()
     {
         this.onDie += OnDie;

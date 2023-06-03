@@ -15,8 +15,8 @@ public class AttackState : State
     
     public override void Enter()
     {
+        textState.text = "AttackState";
         Debug.Log("Entering Attack State");
-        animator.SetBool("IsMoving", true);
         agent.SetDestination(player.position);
         // Choose a random attack type
         currentAttack = (AttackType)Random.Range(0, 3);
@@ -26,17 +26,17 @@ public class AttackState : State
         {
             case AttackType.AOE:
                 //AOE
-                // animator.SetTrigger("AttackAOE");
+                textState.text += " => AOE";
                 fsm.SetState("AOE");
                 break;
             case AttackType.Melee:
                 //Melee
-                // animator.SetTrigger("AttackMelee");
+                textState.text += " => Melee";
                 fsm.SetState("Melee");
                 break;
             case AttackType.ShootSkill:
                 //ShootSkill
-                // animator.SetTrigger("AttackShootSkill");
+                textState.text += " => ShootSkill";
                 fsm.SetState("ShootSkill");
                 break;
         }
@@ -44,18 +44,11 @@ public class AttackState : State
     
     public override void Update()
     {
-        // Logic for attack state
         
-        // Example: If the player moves out of range, transition back to idle state
-        // if (Vector3.Distance(agent.transform.position, player.position) > 15f)
-        // {
-        //     fsm.SetState("Idle");
-        // }
     }
     
     public override void Exit()
     {
-        animator.SetBool("IsMoving", false);
         Debug.Log("Exiting Attack State");
     }
 }

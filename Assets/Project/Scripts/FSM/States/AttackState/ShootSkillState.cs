@@ -9,8 +9,6 @@ public class ShootSkillState : State
     public override void Enter()
     {
         Debug.Log("Entering Shoot Skill State");
-        animator.SetBool("IsMoving", false);
-        animator.SetTrigger("AttackShootSkill"); // Trigger the shoot skill attack animation
         
         // Create and initialize the projectile pool
         projectilePrefab = Resources.Load("bullet") as GameObject;
