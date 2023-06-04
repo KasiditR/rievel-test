@@ -1,4 +1,4 @@
-﻿ using UnityEngine;
+﻿using UnityEngine;
 #if ENABLE_INPUT_SYSTEM 
 using UnityEngine.InputSystem;
 #endif
@@ -105,7 +105,7 @@ namespace StarterAssets
         private CharacterController _controller;
         private StarterAssetsInputs _input;
         private GameObject _mainCamera;
-
+        private PlayerCharacter _playerCharacter;
         private const float _threshold = 0.01f;
 
         private bool _hasAnimator;
@@ -135,10 +135,11 @@ namespace StarterAssets
         private void Start()
         {
             _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
-            
+
             _hasAnimator = TryGetComponent(out _animator);
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
+            _playerCharacter = GetComponent<PlayerCharacter>();
 #if ENABLE_INPUT_SYSTEM 
             _playerInput = GetComponent<PlayerInput>();
 #else
@@ -159,10 +160,8 @@ namespace StarterAssets
             JumpAndGravity();
             GroundedCheck();
             Move();
-            if (_input.dodge && canDodge)
-            {
-                Dodge();
-            }
+            Dodge();
+            Attack();
         }
 
         private void LateUpdate()
@@ -291,22 +290,26 @@ namespace StarterAssets
         private bool canDodge = true;
         private void Dodge()
         {
-            Debug.Log("Dodge");
-            if (!isDodging)
+            if (_input.dodge && canDodge && _playerCharacter.GetStamina() > 10)
             {
-                isDodging = true;
-                canDodge = false;
-                // Calculate the dodge direction based on input
-                // float dodgeHorizontal = Input.GetAxis("Horizontal");
-                // float dodgeVertical = Input.GetAxis("Vertical");
-                // Vector3 dodgeDirection = new Vector3(dodgeHorizontal, 0f, dodgeVertical).normalized;
-                Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
+                Debug.Log("Dodge");
+                if (!isDodging)
+                {
+                    isDodging = true;
+                    canDodge = false;
+                    _playerCharacter.DecreaseStamina(10);
+                    // Calculate the dodge direction based on input
+                    // float dodgeHorizontal = Input.GetAxis("Horizontal");
+                    // float dodgeVertical = Input.GetAxis("Vertical");
+                    // Vector3 dodgeDirection = new Vector3(dodgeHorizontal, 0f, dodgeVertical).normalized;
+                    Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
 
-                // Apply the dodge movement to the CharacterController
-                _controller.Move(inputDirection * dodgeSpeed * Time.deltaTime);
+                    // Apply the dodge movement to the CharacterController
+                    _controller.Move(inputDirection * dodgeSpeed * Time.deltaTime);
 
-                // End the dodge after the specified duration
-                StartCoroutine(EndDodge());
+                    // End the dodge after the specified duration
+                    StartCoroutine(EndDodge());
+                }
             }
         }
         private System.Collections.IEnumerator EndDodge()
@@ -324,6 +327,26 @@ namespace StarterAssets
             yield return new WaitForSeconds(dodgeCooldown);
             canDodge = true;
         }
+        public Transform sword;
+        public float radius;
+        public LayerMask monsterLayer;
+        private void Attack()
+        {
+            if (_input.attack)
+            {
+                // _animator.SetBool("isMeleeAttack",true);
+                _animator.SetTrigger("MeleeAttack");
+
+                Collider[] hitMonsters = Physics.OverlapSphere(sword.transform.position,radius,monsterLayer);
+                foreach (Collider hit in hitMonsters)
+                {
+                    IDamageable damageable = hit.GetComponent<IDamageable>();
+                    damageable?.TakeDamage(_playerCharacter.DamageMelee);
+                }
+                // _animator.SetBool("isMeleeAttack",false);
+            }
+        }
+        
 
         private void JumpAndGravity()
         {
@@ -346,8 +369,9 @@ namespace StarterAssets
                 }
 
                 // Jump
-                if (_input.jump && _jumpTimeoutDelta <= 0.0f)
+                if (_input.jump && _jumpTimeoutDelta <= 0.0f && _playerCharacter.GetStamina() > 10)
                 {
+                    _playerCharacter.DecreaseStamina(10);
                     // the square root of H * -2 * G = how much velocity needed to reach desired height
                     _verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
 
@@ -413,6 +437,8 @@ namespace StarterAssets
             Gizmos.DrawSphere(
                 new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z),
                 GroundedRadius);
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(sword.transform.position,radius);
         }
 
         private void OnFootstep(AnimationEvent animationEvent)

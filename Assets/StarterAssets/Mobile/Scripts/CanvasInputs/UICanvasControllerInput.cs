@@ -31,6 +31,10 @@ namespace StarterAssets
         {
             starterAssetsInputs.DodgeInput(virtualDodge);
         }
+        public void VirtualAttackInput(bool virtualAttack)
+        {
+            starterAssetsInputs.AttackInput(virtualAttack);
+        }
         
     }
 
