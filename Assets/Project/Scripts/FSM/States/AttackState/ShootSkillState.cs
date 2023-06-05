@@ -11,7 +11,7 @@ public class ShootSkillState : State
         Debug.Log("Entering Shoot Skill State");
         
         // Create and initialize the projectile pool
-        projectilePrefab = Resources.Load("bullet") as GameObject;
+        projectilePrefab = Resources.Load("Bullet") as GameObject;
         
         if (projectilePool.Count == 0)
         {
@@ -35,7 +35,7 @@ public class ShootSkillState : State
                 projectile.transform.position = agent.transform.GetChild(0).position;
                 Transform target = player.GetChild(0).transform;
                 projectile.SetActive(true);
-                projectile.GetComponent<Bullet>().Launch(target.position);
+                projectile.GetComponent<ObjectPooling>().Launch("Player",target.position);
                 fsm.SetState("Idle");
             }
         }

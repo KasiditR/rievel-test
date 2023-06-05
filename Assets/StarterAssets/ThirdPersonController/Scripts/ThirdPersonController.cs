@@ -106,6 +106,7 @@ namespace StarterAssets
         private StarterAssetsInputs _input;
         private GameObject _mainCamera;
         private PlayerCharacter _playerCharacter;
+        [SerializeField] private SkillSystem _skillSystem;
         private const float _threshold = 0.01f;
 
         private bool _hasAnimator;
@@ -346,7 +347,6 @@ namespace StarterAssets
                 // _animator.SetBool("isMeleeAttack",false);
             }
         }
-        
 
         private void JumpAndGravity()
         {

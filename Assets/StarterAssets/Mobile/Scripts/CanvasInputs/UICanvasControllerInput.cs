@@ -35,7 +35,6 @@ namespace StarterAssets
         {
             starterAssetsInputs.AttackInput(virtualAttack);
         }
-        
     }
 
 }

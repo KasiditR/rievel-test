@@ -1,17 +1,25 @@
 using UnityEngine;
+using System;
 
-public class Bullet : MonoBehaviour
+public class ObjectPooling : MonoBehaviour
 {
     public float speed = 10f;
     public int damage = 10;
     
     private Vector3 targetPosition;
     private ParticleSystem particleSystem;
-    public void Launch(Vector3 targetPosition)
+    private string _tagHit;
+    public event Action onHit;
+    
+    public void Launch(string tagHit,Vector3 targetPosition)
     {
         this.targetPosition = targetPosition;
+        this._tagHit = tagHit;
         particleSystem = this.GetComponent<ParticleSystem>();
-        particleSystem?.Play();
+        if (particleSystem != null)
+        {
+            particleSystem.Play();
+        }
     }
     
     private void Update()
@@ -23,7 +31,7 @@ public class Bullet : MonoBehaviour
         if (transform.position == targetPosition)
         {
             // Apply damage or any other desired behavior
-            Debug.Log("Bullet hit the target!");
+            Debug.Log("hit the target!");
             
             // Deactivate the bullet
             gameObject.SetActive(false);
@@ -32,17 +40,15 @@ public class Bullet : MonoBehaviour
     
     private void OnTriggerEnter(Collider other)
     {
-        
         // Handle collision with other game objects
-        if (other.CompareTag("Player"))
+        if (other.CompareTag(_tagHit))
         {
-            // Apply damage or any other desired behavior
-            Debug.Log("Bullet hit an enemy!");
             IDamageable damageable = other.GetComponent<IDamageable>();
             damageable.TakeDamage(damage);
             
             // Deactivate the bullet
             gameObject.SetActive(false);
+            onHit?.Invoke();
         }
     }
 }
