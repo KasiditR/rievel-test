@@ -3,12 +3,19 @@ using System;
 
 public class ObjectPooling : MonoBehaviour
 {
-    public float speed = 10f;
-    public int damage = 10;
+    [SerializeField] private float speed = 10f;
+    [SerializeField] private int damage = 10;
     
     private Vector3 targetPosition;
     private ParticleSystem particleSystem;
     private string _tagHit;
+
+    public void Init(float speed, int damage)
+    {
+        this.speed = speed;
+        this.damage = damage;
+    }
+
     public event Action onHit;
     
     public void Launch(string tagHit,Vector3 targetPosition)

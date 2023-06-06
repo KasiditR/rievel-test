@@ -15,7 +15,7 @@ public class Skill
     public float coolDown;
     public int resourceCost;
     public SkillType skillType;
-    public SkillEffect effect;
+    public ParticleSystemController particleSystemController;
 
     private float lastUsedTime;
 
@@ -26,16 +26,18 @@ public class Skill
         return Time.time - lastUsedTime >= coolDown;
     }
 
-    public void Use()
+    public void Use(GameObject obj)
     {
         lastUsedTime = Time.time;
         // Perform actions based on the skill, such as dealing damage or activating abilities
         Debug.Log("Using skill: " + name);
         Debug.Log("Damage: " + value);
 
-        if (effect != null)
+        if (particleSystemController != null)
         {
-            effect.ApplyEffect();
+            ParticleSystemController effectObj = MonoBehaviour.Instantiate(particleSystemController.gameObject, obj.transform.position, Quaternion.identity).GetComponent<ParticleSystemController>();
+            effectObj.PlayEffect();
+            effectObj.onParticleSystemFinished += () => { MonoBehaviour.Destroy(effectObj.gameObject); };
         }
     }
 }

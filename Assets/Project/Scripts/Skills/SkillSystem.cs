@@ -27,7 +27,7 @@ public class SkillSystem : MonoBehaviour
             if (HasEnoughResources(skill.resourceCost))
             {
                 ConsumeResources(skill.resourceCost);
-                skill.Use();
+                skill.Use(this.gameObject);
 
                 // Raise the OnSkillUsed event to notify other scripts
                 OnSkillUsed?.Invoke(skill);

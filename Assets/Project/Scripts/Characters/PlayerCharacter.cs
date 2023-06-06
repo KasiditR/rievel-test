@@ -6,38 +6,43 @@ using UnityEngine;
 public class PlayerCharacter : BaseCharacter
 {
     [Header("Config Mana Point")]
-    [SerializeField] private float currentMana;
-    [SerializeField] private int maxStamina = 100;
-    [SerializeField] private float manaRegenerationAmount = 1;
-
+    [SerializeField] private float _currentMana;
+    [SerializeField] private int _maxStamina = 100;
+    [SerializeField] private float _manaRegenerationAmount = 1;
+    public event Action<float> onManaChange;
     [Header("Config Stamina")]
-    [SerializeField] private float currentStamina;
-    [SerializeField] private int maxMana = 100;
-    [SerializeField] private float staminaRegenerationAmount = 1;
+    [SerializeField] private float _currentStamina;
+    [SerializeField] private int _maxMana = 100;
+    [SerializeField] private float _staminaRegenerationAmount = 1;
+    public event Action<float> onStaminaChange;
 
     [Header("Config Time Regenerate")]
-    [SerializeField] private float regenerationInterval = 1f;
-    [SerializeField] private float damageMelee;
+    [SerializeField] private float _regenerationInterval = 1f;
 
     [Header("Config Skill")]
-    [SerializeField] private SkillSystem skillSystem;
-    [SerializeField] private Skill[] skills;
+    [SerializeField] private SkillSystem _skillSystem;
+    [SerializeField] private Skill[] _skills;
 
-    [SerializeField] private Transform point;
+    [SerializeField] private float _damageMelee;
+    [SerializeField] private Transform _point;
+    [SerializeField] private LayerMask _monsterLayer;
 
-    private bool isRegenerating;
-    private bool isRegenerateStamina;
+    private bool _isRegenerating;
 
-    public float DamageMelee => damageMelee;
-    private void Start()
+    public float DamageMelee => _damageMelee;
+
+    public int MaxStamina { get => _maxStamina; }
+    public int MaxMana { get => _maxMana; }
+    private void Awake() 
     {
-        currentStamina = maxStamina;
-        currentMana = maxMana;
+        this.health = this.maxHealth;
+        _currentStamina = _maxStamina;
+        _currentMana = _maxMana;
         StartCoroutine(RegenerateStamina());
         StartCoroutine(RegenerateMana());
 
-        skillSystem.InitSkill(skills);
-        skillSystem.OnSkillUsed += OnSkill;
+        _skillSystem.InitSkill(_skills);
+        _skillSystem.OnSkillUsed += OnSkill;
     }
 
     private void OnSkill(Skill skill)
@@ -46,45 +51,48 @@ public class PlayerCharacter : BaseCharacter
         {
             case SkillType.Heal:
                 this.health += skill.value;
+                this.OnHealthChange(health);
                 break;
             case SkillType.AOE:
-                AOEAttack(skill.value);
+                AOEAttack(skill);
                 break;
             case SkillType.Slash:
-                SlashAttack(skill.value);
+                SlashAttack(skill);
                 break;
             default:
                 break;
         }
-        
+
     }
 
-    private void SlashAttack(float damage)
+    private void SlashAttack(Skill skill)
     {
         // Get a projectile from the object pool
-        GameObject projectileRef = Resources.Load("Slash") as GameObject; 
-        GameObject projectile = Instantiate(projectileRef,Vector3.zero,Quaternion.identity);
-        
+        GameObject projectileRef = Resources.Load("Slash") as GameObject;
+        GameObject projectile = Instantiate(projectileRef, Vector3.zero, Quaternion.identity);
+
 
         // Set the projectile's position and rotation to match the shooter's
-        projectile.transform.position = point.position;
-        projectile.transform.rotation = point.rotation;
+        projectile.transform.position = _point.position;
+        projectile.transform.rotation = _point.rotation;
 
         // Activate the projectile
         projectile.SetActive(true);
 
-        Vector3 target = this.point.forward * 20;
-        ObjectPooling objectPooling  = projectile.GetComponent<ObjectPooling>();
+        Vector3 target = this._point.forward * 20;
+        ObjectPooling objectPooling = projectile.GetComponent<ObjectPooling>();
+        objectPooling.Init(skill.value, (int)skill.value);
         objectPooling.onHit += () => Destroy(projectile);
-        objectPooling.Launch("Monster",target);
+        objectPooling.Launch("Monster", target);
     }
 
-    private void AOEAttack(float damage)
+    private void AOEAttack(Skill skill)
     {
-        LayerMask monsterLayer = LayerMask.NameToLayer("Monster");
-        Collider[] hitMonsters = Physics.OverlapSphere(this.transform.position,5,monsterLayer);
+        Debug.Log(_monsterLayer);
+        Collider[] hitMonsters = Physics.OverlapSphere(this.transform.position, 3, _monsterLayer);
         foreach (Collider hit in hitMonsters)
         {
+            Debug.Log(hit.gameObject.name);
             IDamageable damageable = hit.GetComponent<IDamageable>();
             damageable?.TakeDamage(DamageMelee);
         }
@@ -94,11 +102,11 @@ public class PlayerCharacter : BaseCharacter
     {
         while (true)
         {
-            if (currentStamina < maxStamina && !isRegenerating)
+            if (_currentStamina < _maxStamina && !_isRegenerating)
             {
-                isRegenerating = true;
+                _isRegenerating = true;
                 yield return StartCoroutine(IncreaseStamina());
-                isRegenerating = false;
+                _isRegenerating = false;
             }
             yield return null;
         }
@@ -109,11 +117,11 @@ public class PlayerCharacter : BaseCharacter
         while (true)
         {
 
-            if (currentMana < maxMana && !isRegenerating)
+            if (_currentMana < _maxMana && !_isRegenerating)
             {
-                isRegenerating = true;
+                _isRegenerating = true;
                 yield return StartCoroutine(IncreaseMana());
-                isRegenerating = false;
+                _isRegenerating = false;
             }
 
             yield return null;
@@ -122,46 +130,50 @@ public class PlayerCharacter : BaseCharacter
 
     private IEnumerator IncreaseStamina()
     {
-        while (currentStamina < maxStamina)
+        while (_currentStamina < _maxStamina)
         {
-            currentStamina += staminaRegenerationAmount;
-            currentStamina = Mathf.Clamp(currentStamina, 0, maxStamina);
-            yield return new WaitForSeconds(regenerationInterval);
+            _currentStamina += _staminaRegenerationAmount;
+            _currentStamina = Mathf.Clamp(_currentStamina, 0, _maxStamina);
+            onStaminaChange?.Invoke(_currentStamina);
+            yield return new WaitForSeconds(_regenerationInterval);
         }
     }
 
     private IEnumerator IncreaseMana()
     {
-        while (currentMana < maxMana)
+        while (_currentMana < _maxMana)
         {
-            currentMana += manaRegenerationAmount;
-            currentMana = Mathf.Clamp(currentMana, 0, maxMana);
-            yield return new WaitForSeconds(regenerationInterval);
+            _currentMana += _manaRegenerationAmount;
+            _currentMana = Mathf.Clamp(_currentMana, 0, _maxMana);
+            onManaChange?.Invoke(_currentMana);
+            yield return new WaitForSeconds(_regenerationInterval);
         }
     }
 
     public float GetManaPoint()
     {
-        return currentMana;
+        return _currentMana;
     }
 
     public void DecreaseManaPoint(float value)
     {
-        currentMana -= value;
+        _currentMana -= value;
+        onManaChange?.Invoke(_currentMana);
     }
 
     public float GetStamina()
     {
-        return currentStamina;
+        return _currentStamina;
     }
 
     public void DecreaseStamina(float value)
     {
-        currentStamina -= value;
+        _currentStamina -= value;
+        onStaminaChange?.Invoke(_currentStamina);
     }
     private IEnumerator CoroutineRegenerateStamina()
     {
-        
+
         yield return null;
     }
 

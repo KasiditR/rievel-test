@@ -10,6 +10,7 @@ public class MonsterCharacter : BaseCharacter
     private bool isBelow = false;
     private void Awake()
     {
+        this.health = this.maxHealth;
         monsterController = this.GetComponent<MonsterController>();
     }
     private void OnEnable()
@@ -25,6 +26,7 @@ public class MonsterCharacter : BaseCharacter
     
     private void OnDie()
     {
+        Destroy(this.gameObject);
     }
     private void OnHealthBelow()
     {

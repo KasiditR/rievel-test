@@ -335,7 +335,6 @@ namespace StarterAssets
         {
             if (_input.attack)
             {
-                // _animator.SetBool("isMeleeAttack",true);
                 _animator.SetTrigger("MeleeAttack");
 
                 Collider[] hitMonsters = Physics.OverlapSphere(sword.transform.position,radius,monsterLayer);
@@ -344,7 +343,6 @@ namespace StarterAssets
                     IDamageable damageable = hit.GetComponent<IDamageable>();
                     damageable?.TakeDamage(_playerCharacter.DamageMelee);
                 }
-                // _animator.SetBool("isMeleeAttack",false);
             }
         }
 
