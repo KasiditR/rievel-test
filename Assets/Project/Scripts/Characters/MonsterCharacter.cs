@@ -26,6 +26,9 @@ public class MonsterCharacter : BaseCharacter
     
     private void OnDie()
     {
+        PlayerCharacter player = GameObject.FindObjectOfType<PlayerCharacter>();
+        player.SetExp(100);
+        player.SetMoney(100);
         Destroy(this.gameObject);
     }
     private void OnHealthBelow()

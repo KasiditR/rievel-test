@@ -5,6 +5,10 @@ using UnityEngine;
 
 public class PlayerCharacter : BaseCharacter
 {
+    [SerializeField] private float _exp;
+    public event Action<float> onExpChange;
+    [SerializeField] private float _money;
+    public event Action<float> onMoneyChange;
     [Header("Config Mana Point")]
     [SerializeField] private float _currentMana;
     [SerializeField] private int _maxStamina = 100;
@@ -33,6 +37,26 @@ public class PlayerCharacter : BaseCharacter
 
     public int MaxStamina { get => _maxStamina; }
     public int MaxMana { get => _maxMana; }
+    public float GetExp()
+    {
+        return _exp;
+    }
+    public void SetExp(float value)
+    {
+        _exp = value;
+        onExpChange?.Invoke(GetExp());
+    }
+
+    public float GetMoney()
+    {
+        return _money;
+    }
+    public void SetMoney(float value)
+    {
+        _money = value;
+        onMoneyChange?.Invoke(GetMoney());
+    }
+
     private void Awake() 
     {
         this.health = this.maxHealth;
@@ -170,11 +194,6 @@ public class PlayerCharacter : BaseCharacter
     {
         _currentStamina -= value;
         onStaminaChange?.Invoke(_currentStamina);
-    }
-    private IEnumerator CoroutineRegenerateStamina()
-    {
-
-        yield return null;
     }
 
     private void OnEnable()

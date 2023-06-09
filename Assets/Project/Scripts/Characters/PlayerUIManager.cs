@@ -15,6 +15,9 @@ public class PlayerUIManager : MonoBehaviour
     [Header("Stamina")]
     [SerializeField] private TMP_Text staminaText;
     [SerializeField] private Image staminaBar;
+    [Header("Exp And Money")]
+    [SerializeField] private TMP_Text expText;
+    [SerializeField] private TMP_Text moneyText;
 
     private void Start()
     {
@@ -22,6 +25,8 @@ public class PlayerUIManager : MonoBehaviour
         playerCharacter.onHealthChange += UpdateHealthUI;
         playerCharacter.onManaChange += UpdateManaUI;
         playerCharacter.onStaminaChange += UpdateStaminaUI;
+        playerCharacter.onExpChange += UpdateExpUI;
+        playerCharacter.onMoneyChange += UpdateMoneyUI;
 
         // Set initial UI values
         UpdateHealthUI(playerCharacter.health);
@@ -35,6 +40,8 @@ public class PlayerUIManager : MonoBehaviour
         playerCharacter.onHealthChange -= UpdateHealthUI;
         playerCharacter.onManaChange -= UpdateManaUI;
         playerCharacter.onStaminaChange -= UpdateStaminaUI;
+        playerCharacter.onExpChange -= UpdateExpUI;
+        playerCharacter.onMoneyChange -= UpdateMoneyUI;
     }
 
     private void UpdateHealthUI(float health)
@@ -59,5 +66,15 @@ public class PlayerUIManager : MonoBehaviour
         float staminaFillAmount = stamina / playerCharacter.MaxStamina;
         staminaBar.fillAmount = staminaFillAmount;
         staminaText.text = $"Stamina: {stamina}/{playerCharacter.MaxStamina}";
+    }
+    private void UpdateExpUI(float exp)
+    {
+        // Update the stamina bar fill amount with the new stamina value
+        expText.text = $"EXp: {exp}";
+    }
+    private void UpdateMoneyUI(float money)
+    {
+        // Update the stamina bar fill amount with the new stamina value
+        moneyText.text = $"Money: {money}";
     }
 }
