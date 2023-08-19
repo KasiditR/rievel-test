@@ -1,0 +1,25 @@
+name: Unity Test Runner
+
+on: [push]
+
+jobs:
+  test:
+    name: Run Unity Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Set up Unity
+        run: |
+          UNITY_VERSION=2019.2.11f1  # Specify your Unity version
+          UNITY_URL="https://download.unity3d.com/download_unity/linux/unity-${UNITY_VERSION}.tgz"
+          curl -o unity.tar.gz $UNITY_URL
+          tar -xzf unity.tar.gz
+          sudo ./unity-${UNITY_VERSION}/unity-editor/install.sh
+          sudo ./unity-${UNITY_VERSION}/unity-editor/Unity -logFile /dev/stdout -batchmode -quit -createManualActivationFile
+
+      - name: Run Unity Tests
+        run: |
+          ./unity-${UNITY_VERSION}/unity-editor/Unity -projectPath ${{ github.workspace }} -runTests -batchmode -returnlicense
